@@ -3,38 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Planificador de Comidas</title>
+  <title>Planificador de Comidas — Juan y Marian</title>
+  <meta name="theme-color" content="#009688">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji';}
-    .gradient-green{background:linear-gradient(135deg,#10b981 0%,#059669 100%)}
-    .glass{backdrop-filter:blur(10px);background:rgba(255,255,255,.95)}
+    body{font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Apple Color Emoji','Segoe UI Emoji'}
+
+    /* === Branding corporativo === */
+    :root{
+      --brand:#009688;
+      --brand-dark:#00796b;
+      --brand-100:#e0f2f1;
+    }
+    .gradient-brand{background:linear-gradient(135deg,var(--brand) 0%,var(--brand-dark) 100%)}
+    .tab-active{background:var(--brand);color:#fff}
+    .tab-inactive{background:#fff;color:#6b7280}
+
     .hover-lift{transition:all .25s ease}
     .hover-lift:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.1)}
-    .meal-chip{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border-radius:.65rem;background:#ecfeff;border:1px solid #cffafe}
-    .meal-name{max-width:100%;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
-    .tab-active{background:#10b981;color:#fff}
-    .tab-inactive{background:#fff;color:#6b7280}
-    .fade-in{animation:fadeIn .35s ease}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+    /* Pastillas del calendario (texto completo) */
+    .meal-chip{display:flex;align-items:center;gap:.45rem;padding:.45rem .65rem;border-radius:.7rem;background:var(--brand-100);border:1px solid #b2dfdb;width:100%}
+    .meal-name{max-width:100%;white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+
     .slot{min-height:6rem}
     @media (max-width:768px){
       .slot{min-height:4.25rem}
-      .calendar-grid{grid-template-columns:90px repeat(7,minmax(110px,1fr));overflow-x:auto}
+      .calendar-grid{grid-template-columns:90px repeat(7,minmax(120px,1fr));overflow-x:auto}
+      .calendar-grid>div:first-child{position:sticky;left:0;background:#f9fafb;z-index:1}
     }
   </style>
 </head>
 <body class="bg-gray-50">
   <!-- Header -->
-  <header class="gradient-green text-white shadow-lg">
+  <header class="gradient-brand text-white shadow-lg">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center py-4">
         <div class="flex items-center gap-3">
-          <div class="text-3xl">🍽️</div>
+          <div class="text-3xl">🥗</div>
           <div>
-            <h1 class="text-2xl font-bold">Planificador de Comidas</h1>
+            <h1 class="text-2xl font-bold">Planificador de Comidas — Juan y Marian</h1>
             <p class="text-sm/5 opacity-90">Organiza tu semana culinaria con facilidad</p>
           </div>
         </div>
@@ -83,34 +93,32 @@
         </div>
         <div class="flex items-center gap-2">
           <button id="prev-week" class="p-2 rounded-lg bg-white shadow hover:shadow-md"><i class="fas fa-chevron-left text-gray-600"></i></button>
-          <div id="week-chip" class="bg-green-100 text-green-800 px-3 py-2 rounded-lg font-medium">Semana</div>
+          <div id="week-chip" class="bg-emerald-100 text-emerald-800 px-3 py-2 rounded-lg font-medium">Semana</div>
           <button id="next-week" class="p-2 rounded-lg bg-white shadow hover:shadow-md"><i class="fas fa-chevron-right text-gray-600"></i></button>
           <button id="clear-plan" class="text-red-600 hover:text-red-700 px-3 py-2 rounded-lg border border-red-200 hover:bg-red-50"><i class="fas fa-trash mr-2"></i>Limpiar</button>
         </div>
       </div>
 
       <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Head -->
         <div id="calendar-head" class="grid calendar-grid grid-cols-8 border-b">
           <div class="p-3 md:p-4 bg-gray-50 font-semibold text-gray-700 text-center">Tipo</div>
-          <!-- Day headers will be injected here -->
         </div>
-        <!-- LUNCH row -->
-        <div class="grid calendar-grid grid-cols-8 border-b">
-          <div class="p-3 md:p-4 bg-green-50 flex items-center justify-center border-r">
-            <div class="flex items-center gap-2 text-green-700"><i class="fas fa-utensils"></i><span class="font-medium">Comida</span></div>
+        <!-- Lunch row -->
+        <div id="lunch-row" class="grid calendar-grid grid-cols-8 border-b">
+          <div class="p-3 md:p-4 bg-emerald-50 flex items-center justify-center border-r">
+            <div class="flex items-center gap-2 text-emerald-700"><i class="fas fa-utensils"></i><span class="font-medium">Comida</span></div>
           </div>
-          <!-- lunch slots will be injected here -->
         </div>
-        <!-- DINNER row -->
-        <div class="grid calendar-grid grid-cols-8">
-          <div class="p-3 md:p-4 bg-blue-50 flex items-center justify-center border-r">
-            <div class="flex items-center gap-2 text-blue-700"><i class="fas fa-moon"></i><span class="font-medium">Cena</span></div>
+        <!-- Dinner row -->
+        <div id="dinner-row" class="grid calendar-grid grid-cols-8">
+          <div class="p-3 md:p-4 bg-sky-50 flex items-center justify-center border-r">
+            <div class="flex items-center gap-2 text-sky-700"><i class="fas fa-moon"></i><span class="font-medium">Cena</span></div>
           </div>
-          <!-- dinner slots will be injected here -->
         </div>
       </div>
 
-      <!-- QUICK ADD -->
+      <!-- Quick Add -->
       <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
         <div class="flex items-baseline justify-between">
           <h3 class="text-lg font-semibold text-gray-900">Añadir rápido</h3>
@@ -123,25 +131,30 @@
     <!-- RECIPES VIEW -->
     <section id="recipes-view" class="tab-content hidden">
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-gray-900 flex items-center"><i class="fas fa-database mr-3 text-green-500"></i>Base de datos de comidas</h2>
+        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+          <i class="fas fa-database mr-3" style="color:var(--brand)"></i>Base de datos de comidas
+        </h2>
         <div class="flex items-center gap-2">
           <button id="export-json" class="px-3 py-2 rounded-lg border hover:bg-gray-50"><i class="fa-solid fa-file-arrow-down mr-2"></i>Exportar</button>
-          <label class="px-3 py-2 rounded-lg border hover:bg-gray-50 cursor-pointer"><i class="fa-solid fa-file-arrow-up mr-2"></i>Importar<input id="import-json" type="file" accept="application/json" class="hidden" /></label>
-          <button id="add-recipe-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"><i class="fas fa-plus mr-2"></i>Añadir</button>
+          <label class="px-3 py-2 rounded-lg border hover:bg-gray-50 cursor-pointer">
+            <i class="fa-solid fa-file-arrow-up mr-2"></i>Importar
+            <input id="import-json" type="file" accept="application/json" class="hidden" />
+          </label>
+          <button id="add-recipe-btn" class="px-4 py-2 rounded-lg text-white" style="background:var(--brand)"><i class="fas fa-plus mr-2"></i>Añadir</button>
         </div>
       </div>
 
       <!-- Stats -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-green-100 rounded-lg p-4 text-center">
-          <div class="text-2xl font-bold text-green-800" id="recipes-count">0</div>
-          <div class="text-sm text-green-700">Comidas</div>
+        <div class="rounded-lg p-4 text-center" style="background:var(--brand-100)">
+          <div class="text-2xl font-bold text-emerald-800" id="recipes-count">0</div>
+          <div class="text-sm text-emerald-700">Comidas</div>
         </div>
-        <div class="bg-blue-100 rounded-lg p-4 text-center">
-          <div class="text-2xl font-bold text-blue-800" id="dinners-count">0</div>
-          <div class="text-sm text-blue-700">Cenas</div>
+        <div class="rounded-lg p-4 text-center" style="background:#e0f2fe">
+          <div class="text-2xl font-bold text-sky-800" id="dinners-count">0</div>
+          <div class="text-sm text-sky-700">Cenas</div>
         </div>
-        <div class="bg-purple-100 rounded-lg p-4 text-center">
+        <div class="rounded-lg p-4 text-center" style="background:#ede9fe">
           <div class="text-2xl font-bold text-purple-800" id="total-ingredients">0</div>
           <div class="text-sm text-purple-700">Ingredientes únicos</div>
         </div>
@@ -152,19 +165,14 @@
         <div class="flex flex-col md:flex-row gap-4">
           <div class="flex-1 relative">
             <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-            <input id="recipe-search" type="text" placeholder="Buscar por nombre, descripción o ingredientes..." class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+            <input id="recipe-search" type="text" placeholder="Buscar por nombre, descripción o ingredientes..." class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" />
           </div>
           <div class="flex gap-2">
-            <select id="difficulty-filter" class="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500">
-              <option value="">Todas</option>
-              <option value="facil">Fácil</option>
-              <option value="media">Media</option>
-              <option value="dificil">Difícil</option>
+            <select id="difficulty-filter" class="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500">
+              <option value="">Todas</option><option value="facil">Fácil</option><option value="media">Media</option><option value="dificil">Díficil</option>
             </select>
-            <select id="type-filter" class="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500">
-              <option value="">Todos</option>
-              <option value="lunch">Comida</option>
-              <option value="dinner">Cena</option>
+            <select id="type-filter" class="px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500">
+              <option value="">Todos</option><option value="lunch">Comida</option><option value="dinner">Cena</option>
             </select>
           </div>
         </div>
@@ -177,15 +185,16 @@
     <section id="shopping-view" class="tab-content hidden">
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900 flex items-center"><i class="fas fa-cart-shopping mr-3 text-blue-500"></i>Lista de compras</h2>
+          <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-cart-shopping mr-3" style="color:var(--brand)"></i>Lista de compras
+          </h2>
           <p class="text-gray-600">Ingredientes necesarios para tu planificación semanal</p>
         </div>
         <div class="flex items-center gap-2">
-          <button id="generate-list-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"><i class="fas fa-rotate mr-2"></i>Generar</button>
+          <button id="generate-list-btn" class="px-4 py-2 rounded-lg text-white" style="background:#2563eb"><i class="fas fa-rotate mr-2"></i>Generar</button>
           <button id="clear-list-btn" class="px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50"><i class="fas fa-trash mr-2"></i>Limpiar</button>
         </div>
       </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white rounded-xl shadow-lg p-6">
           <h3 class="text-lg font-semibold mb-4">Lista de ingredientes</h3>
@@ -207,7 +216,7 @@
 
   <!-- RECIPE PICKER MODAL -->
   <div id="recipe-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden fade-in">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
       <div class="p-4 border-b flex items-center gap-3">
         <h3 class="text-xl font-bold">Elegir receta</h3>
         <div class="ml-auto relative w-1/2">
@@ -222,7 +231,7 @@
 
   <!-- ADD RECIPE MODAL -->
   <div id="add-recipe-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full fade-in">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full">
       <div class="p-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold">Añadir nueva receta</h3>
@@ -231,16 +240,16 @@
         <form id="add-recipe-form" class="space-y-4">
           <div>
             <label class="block text-sm font-medium mb-1">Nombre</label>
-            <input id="recipe-name" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500" placeholder="Ej: Paella Valenciana" />
+            <input id="recipe-name" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="Ej: Paella Valenciana" />
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Descripción</label>
-            <textarea id="recipe-description" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500" rows="2" placeholder="Descripción breve de la receta"></textarea>
+            <textarea id="recipe-description" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500" rows="2" placeholder="Descripción breve de la receta"></textarea>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium mb-1">Tipo</label>
-              <select id="recipe-type" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+              <select id="recipe-type" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
                 <option value="">Seleccionar</option>
                 <option value="lunch">Comida</option>
                 <option value="dinner">Cena</option>
@@ -248,7 +257,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Dificultad</label>
-              <select id="recipe-difficulty" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500">
+              <select id="recipe-difficulty" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500">
                 <option value="">Seleccionar</option>
                 <option value="facil">Fácil</option>
                 <option value="media">Media</option>
@@ -258,14 +267,14 @@
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Tiempo (min)</label>
-            <input id="recipe-time" type="number" min="5" max="300" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500" placeholder="30" />
+            <input id="recipe-time" type="number" min="5" max="300" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500" placeholder="30" />
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Ingredientes (uno por línea)</label>
-            <textarea id="recipe-ingredients" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500" rows="4" placeholder="arroz&#10;pollo&#10;pimiento rojo&#10;ajo"></textarea>
+            <textarea id="recipe-ingredients" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500" rows="4" placeholder="arroz&#10;pollo&#10;pimiento rojo&#10;ajo"></textarea>
           </div>
           <div class="flex gap-3 pt-2">
-            <button class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700" type="submit"><i class="fas fa-plus mr-2"></i>Añadir</button>
+            <button class="flex-1 text-white py-3 rounded-lg" style="background:var(--brand)" type="submit"><i class="fas fa-plus mr-2"></i>Añadir</button>
             <button id="cancel-add" class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200" type="button">Cancelar</button>
           </div>
         </form>
@@ -273,44 +282,42 @@
     </div>
   </div>
 
+  <!-- SCRIPT -->
   <script>
-    // ---------- Utilities ----------
-    const $ = (sel, root=document) => root.querySelector(sel);
-    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-    const clone = obj => JSON.parse(JSON.stringify(obj));
+    // ===== Utilidades =====
+    const $ = (s, r=document)=>r.querySelector(s);
+    const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+    const clone = o => JSON.parse(JSON.stringify(o));
 
-    // Dates helpers (ISO without time)
     const toISO = d => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString().slice(0,10);
-    const fromISO = iso => { const [y,m,dd] = iso.split('-').map(Number); return new Date(Date.UTC(y,m-1,dd)); };
-    const startOfWeekMonday = (date=new Date()) => {
-      const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-      const day = d.getUTCDay(); // 0 Sun ... 6 Sat
-      const diff = (day === 0 ? -6 : 1) - day; // move to Monday
-      d.setUTCDate(d.getUTCDate() + diff);
-      return d;
+    const fromISO = iso => { const [y,m,dd]=iso.split('-').map(Number); return new Date(Date.UTC(y,m-1,dd)); };
+    const startOfWeekMonday = (date=new Date())=>{
+      const d=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate()));
+      const day=d.getUTCDay(); const diff=(day===0?-6:1)-day; d.setUTCDate(d.getUTCDate()+diff); return d;
     };
-    const addDays = (date, n) => { const d = new Date(date); d.setUTCDate(d.getUTCDate() + n); return d; };
+    const addDays = (d,n)=>{ const x=new Date(d); x.setUTCDate(x.getUTCDate()+n); return x; };
+    const dayKeys=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const dayNames=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+    const getISOWeekNumber = d=>{
+      const date=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));
+      date.setUTCDate(date.getUTCDate()+4-(date.getUTCDay()||7));
+      const yearStart=new Date(Date.UTC(date.getUTCFullYear(),0,1));
+      return Math.ceil(((date-yearStart)/86400000+1)/7);
+    };
 
-    const dayKeys = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-    const dayNames = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-
-    // ---------- Storage ----------
-    const LS_RECIPES = 'mp_recipes_v1';
-    const planKey = (weekStartISO) => `mp_plan_${weekStartISO}`;
+    // ===== Storage =====
+    const LS_RECIPES='mp_recipes_v1';
+    const planKey = weekISO => `mp_plan_${weekISO}`;
 
     const storage = {
-      getRecipes(){
-        const raw = localStorage.getItem(LS_RECIPES);
-        if(raw){ try{ return JSON.parse(raw);}catch{}}
-        return null;
-      },
+      getRecipes(){ try{ return JSON.parse(localStorage.getItem(LS_RECIPES))||null; }catch{return null} },
       saveRecipes(list){ localStorage.setItem(LS_RECIPES, JSON.stringify(list)); },
-      getPlan(weekISO){ const raw = localStorage.getItem(planKey(weekISO)); return raw? JSON.parse(raw): null; },
-      savePlan(weekISO, plan){ localStorage.setItem(planKey(weekISO), JSON.stringify(plan)); },
-      clearPlan(weekISO){ localStorage.removeItem(planKey(weekISO)); }
+      getPlan(w){ try{ return JSON.parse(localStorage.getItem(planKey(w)))||null; }catch{return null} },
+      savePlan(w,p){ localStorage.setItem(planKey(w), JSON.stringify(p)); },
+      clearPlan(w){ localStorage.removeItem(planKey(w)); }
     };
 
-    // ---------- Seed data ----------
+    // ===== Datos de ejemplo =====
     const seedRecipes = [
       {id:1,name:'Ensalada César con Pollo',description:'Ensalada clásica fresca y nutritiva',difficulty:'facil',time:20,type:'lunch',ingredients:['lechuga romana','pollo','parmesano','pan tostado','anchoas','ajo','limón','aceite de oliva']},
       {id:2,name:'Bowl de Quinoa y Verduras',description:'Bowl saludable rico en proteínas vegetales',difficulty:'facil',time:25,type:'lunch',ingredients:['quinoa','brócoli','zanahoria','garbanzos','aguacate','semillas de girasol','limón']},
@@ -327,185 +334,162 @@
       {id:13,name:'Pollo al Curry',description:'Aromático y fácil',difficulty:'media',time:35,type:'dinner',ingredients:['pollo','curry','leche de coco','arroz','cebolla']},
       {id:14,name:'Ensalada de Garbanzos',description:'Proteína vegetal',difficulty:'facil',time:10,type:'lunch',ingredients:['garbanzos','tomate','pepino','cebolla','aceite de oliva','limón']}
     ];
-
     let recipes = storage.getRecipes() || seedRecipes;
 
-    // ---------- State ----------
+    // ===== Estado =====
     let currentWeekStart = startOfWeekMonday(new Date());
-    let selectedQuickRecipeId = null; // For quick add flow
+    let selectedQuickRecipeId = null;
 
-    function emptyPlan(){
-      const slots = {};
-      for(const d of dayKeys){ slots[`${d}-lunch`] = null; slots[`${d}-dinner`] = null; }
-      return { weekStartISO: toISO(currentWeekStart), slots };
-    }
+    // ===== Plan =====
+    const emptyPlan = ()=>{
+      const slots={}; for(const d of dayKeys){ slots[`${d}-lunch`]=null; slots[`${d}-dinner`]=null; }
+      return {weekStartISO:toISO(currentWeekStart), slots};
+    };
+    const getActivePlan = ()=> storage.getPlan(toISO(currentWeekStart)) || emptyPlan();
 
-    function getActivePlan(){
-      const weekISO = toISO(currentWeekStart);
-      return storage.getPlan(weekISO) || emptyPlan();
-    }
-
-    // ---------- Rendering: Calendar ----------
+    // ===== Render calendario =====
     function renderCalendarHead(){
       const head = $('#calendar-head');
-      // clear existing day cells
-      head.querySelectorAll(':scope > div:not(:first-child)').forEach(n => n.remove());
+      head.querySelectorAll(':scope > div:not(:first-child)').forEach(n=>n.remove());
       for(let i=0;i<7;i++){
         const d = addDays(currentWeekStart,i);
         const cell = document.createElement('div');
-        cell.className = 'p-3 md:p-4 bg-gray-50 text-center';
-        const name = dayNames[i];
-        const dt = d.getUTCDate();
-        const month = d.toLocaleString('es-ES',{month:'long', timeZone:'UTC'});
-        cell.innerHTML = `<div class="font-semibold text-gray-700">${name}</div><div class="text-xs text-gray-500">${dt} ${month}</div>`;
+        cell.className='p-3 md:p-4 bg-gray-50 text-center';
+        const month = d.toLocaleString('es-ES',{month:'long',timeZone:'UTC'});
+        cell.innerHTML = `<div class="font-semibold text-gray-700">${dayNames[i]}</div><div class="text-xs text-gray-500">${d.getUTCDate()} ${month}</div>`;
         head.appendChild(cell);
       }
-      const end = addDays(currentWeekStart,6);
-      $('#week-range').textContent = `Semana del ${addDays(currentWeekStart,0).getUTCDate()} de ${currentWeekStart.toLocaleString('es-ES',{month:'long', timeZone:'UTC'})} al ${end.getUTCDate()} de ${end.toLocaleString('es-ES',{month:'long', timeZone:'UTC'})} ${end.getUTCFullYear()}`;
+      const end=addDays(currentWeekStart,6);
+      $('#week-range').textContent = `Semana del ${currentWeekStart.getUTCDate()} de ${currentWeekStart.toLocaleString('es-ES',{month:'long',timeZone:'UTC'})} al ${end.getUTCDate()} de ${end.toLocaleString('es-ES',{month:'long',timeZone:'UTC'})} ${end.getUTCFullYear()}`;
       $('#week-chip').textContent = `Semana ${getISOWeekNumber(fromISO(toISO(currentWeekStart)))}`;
     }
 
-    function getISOWeekNumber(d){
-      const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-      // Thursday in current week decides the year.
-      date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay()||7));
-      const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
-      const weekNo = Math.ceil(((date - yearStart) / 86400000 + 1)/7);
-      return weekNo;
-    }
-
-    function renderSlots(){
-      const plan = getActivePlan();
-      const lunchRow = document.querySelectorAll('.calendar-grid')[1]; // first grid after head
-      const dinnerRow = document.querySelectorAll('.calendar-grid')[2];
-      // remove previous slot cells
-      lunchRow.querySelectorAll(':scope > div:not(:first-child)').forEach(n => n.remove());
-      dinnerRow.querySelectorAll(':scope > div:not(:first-child)').forEach(n => n.remove());
-
-      for(let i=0;i<7;i++){
-        const dayKey = dayKeys[i];
-        lunchRow.appendChild(createSlot(dayKey,'lunch', plan.slots[`${dayKey}-lunch`]));
-        dinnerRow.appendChild(createSlot(dayKey,'dinner', plan.slots[`${dayKey}-dinner`]));
-      }
-    }
-
-    function createSlot(dayKey, meal, recipeId){
-      const el = document.createElement('div');
-      el.className = 'meal-slot slot p-3 md:p-4 border-r hover:bg-gray-50 cursor-pointer flex items-center justify-center';
-      el.dataset.day = dayKey; el.dataset.meal = meal;
+    function createSlot(dayKey,meal,recipeId){
+      const el=document.createElement('div');
+      el.className='meal-slot slot p-3 md:p-4 border-r hover:bg-gray-50 cursor-pointer flex items-center justify-center';
+      el.dataset.day=dayKey; el.dataset.meal=meal;
       el.addEventListener('click', onSlotClick);
-      el.addEventListener('dragover', e => e.preventDefault());
+      el.addEventListener('dragover', e=>e.preventDefault());
       el.addEventListener('drop', onSlotDrop);
-      renderSlotContent(el, recipeId);
+      renderSlotContent(el,recipeId);
       return el;
     }
 
-    function renderSlotContent(slotEl, recipeId){
-      slotEl.innerHTML = '';
+    function renderSlots(){
+      const plan=getActivePlan();
+      const lunchRow = $('#lunch-row');
+      const dinnerRow = $('#dinner-row');
+      lunchRow.querySelectorAll(':scope > div:not(:first-child)').forEach(n=>n.remove());
+      dinnerRow.querySelectorAll(':scope > div:not(:first-child)').forEach(n=>n.remove());
+      for(let i=0;i<7;i++){
+        const k=dayKeys[i];
+        lunchRow.appendChild(createSlot(k,'lunch',plan.slots[`${k}-lunch`]));
+        dinnerRow.appendChild(createSlot(k,'dinner',plan.slots[`${k}-dinner`]));
+      }
+    }
+
+    function renderSlotContent(slotEl,recipeId){
+      slotEl.innerHTML='';
       if(!recipeId){
         slotEl.innerHTML = `<div class="text-gray-400 text-center select-none"><i class="fas fa-plus text-2xl mb-1"></i><div class="text-xs">Vacío</div></div>`;
         return;
       }
-      const r = recipes.find(x => x.id === recipeId);
+      const r = recipes.find(x=>x.id===recipeId);
       const chip = document.createElement('div');
-      chip.className = 'meal-chip w-full justify-center';
+      chip.className='meal-chip justify-center';
       chip.draggable = true;
-      chip.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', String(recipeId)); });
+      chip.addEventListener('dragstart', e=> e.dataTransfer.setData('text/plain', String(recipeId)));
       chip.innerHTML = `
         <i class="fa-solid ${r.type==='lunch'?'fa-sun':'fa-moon'}"></i>
         <div class="meal-name" title="${r.name}">${r.name}</div>
         <button class="ml-2 text-gray-500 hover:text-red-600" aria-label="Quitar"><i class="fa-solid fa-xmark"></i></button>
       `;
-      chip.querySelector('button').addEventListener('click', (ev)=>{
-        ev.stopPropagation();
-        setSlot(slotEl.dataset.day, slotEl.dataset.meal, null);
+      chip.querySelector('button').addEventListener('click', ev=>{
+        ev.stopPropagation(); setSlot(slotEl.dataset.day,slotEl.dataset.meal,null);
       });
       slotEl.appendChild(chip);
     }
 
-    function setSlot(dayKey, meal, recipeId){
-      const plan = getActivePlan();
-      plan.slots[`${dayKey}-${meal}`] = recipeId;
-      storage.savePlan(plan.weekStartISO, plan);
-      // re-render just that slot
+    function setSlot(dayKey,meal,recipeId){
+      const plan=getActivePlan();
+      plan.slots[`${dayKey}-${meal}`]=recipeId;
+      storage.savePlan(plan.weekStartISO,plan);
       const slotEl = document.querySelector(`.meal-slot[data-day="${dayKey}"][data-meal="${meal}"]`);
-      renderSlotContent(slotEl, recipeId);
+      renderSlotContent(slotEl,recipeId);
     }
 
     function onSlotClick(e){
-      const slot = e.currentTarget;
+      const slot=e.currentTarget;
       if(selectedQuickRecipeId){
-        setSlot(slot.dataset.day, slot.dataset.meal, selectedQuickRecipeId);
-        flash(slot);
-        clearQuickSelection();
-      } else {
-        openRecipePicker(slot.dataset.day, slot.dataset.meal);
+        setSlot(slot.dataset.day,slot.dataset.meal,selectedQuickRecipeId);
+        flash(slot); clearQuickSelection();
+      }else{
+        openRecipePicker(slot.dataset.day,slot.dataset.meal);
       }
     }
-
     function onSlotDrop(e){
       e.preventDefault();
-      const recipeId = Number(e.dataTransfer.getData('text/plain'));
-      const slot = e.currentTarget;
-      setSlot(slot.dataset.day, slot.dataset.meal, recipeId);
+      const recipeId=Number(e.dataTransfer.getData('text/plain'));
+      const slot=e.currentTarget;
+      setSlot(slot.dataset.day,slot.dataset.meal,recipeId);
       flash(slot);
     }
-
     function flash(el){
-      el.classList.add('ring','ring-green-300');
-      setTimeout(()=>el.classList.remove('ring','ring-green-300'),400);
+      el.classList.add('ring','ring-emerald-300'); setTimeout(()=>el.classList.remove('ring','ring-emerald-300'),400);
     }
 
-    // ---------- Quick add ----------
+    // ===== Quick Add =====
     function renderQuickAdd(){
-      const cont = $('#quick-recipes');
-      cont.innerHTML='';
+      const cont = $('#quick-recipes'); cont.innerHTML = '';
       const suggestions = pickRandom(recipes, 8);
       for(const r of suggestions){
         const btn = document.createElement('button');
         btn.className='px-3 py-2 text-left rounded-lg border hover:bg-gray-50 flex items-center gap-2';
-        btn.innerHTML=`<i class="fa-solid ${r.type==='lunch'?'fa-sun text-amber-500':'fa-moon text-blue-500'}"></i><span class="truncate">${r.name}</span>`;
-        btn.addEventListener('click',()=> selectQuickRecipe(r.id, btn));
+        btn.innerHTML = `<i class="fa-solid ${r.type==='lunch'?'fa-sun text-amber-500':'fa-moon text-sky-500'}"></i><span class="truncate">${r.name}</span>`;
+        btn.addEventListener('click',()=> selectQuickRecipe(r.id,btn));
         cont.appendChild(btn);
       }
     }
-
-    function selectQuickRecipe(id, btn){
-      selectedQuickRecipeId = id;
-      $$('#quick-recipes button').forEach(b=> b.classList.remove('bg-green-600','text-white'));
-      btn.classList.add('bg-green-600','text-white');
+    function selectQuickRecipe(id,btn){
+      selectedQuickRecipeId=id;
+      $$('#quick-recipes button').forEach(b=>b.classList.remove('text-white'));
+      $$('#quick-recipes button').forEach(b=>b.style.background='');
+      btn.classList.add('text-white');
+      btn.style.background='var(--brand)';
     }
-    function clearQuickSelection(){ selectedQuickRecipeId = null; $$('#quick-recipes button').forEach(b=> b.classList.remove('bg-green-600','text-white')); }
-    function pickRandom(list, n){
-      const arr = [...list];
-      arr.sort(()=>Math.random()-0.5); return arr.slice(0, Math.min(n, arr.length));
+    function clearQuickSelection(){
+      selectedQuickRecipeId=null;
+      $$('#quick-recipes button').forEach(b=>{ b.classList.remove('text-white'); b.style.background=''; });
     }
+    function pickRandom(arr,n){ const a=[...arr]; a.sort(()=>Math.random()-0.5); return a.slice(0,Math.min(n,a.length)); }
 
-    // ---------- Recipes grid ----------
+    // ===== Recipes grid =====
     function renderRecipesGrid(){
-      const grid = $('#recipes-grid');
+      const grid=$('#recipes-grid'); if(!grid) return;
       grid.innerHTML='';
-      const q = $('#recipe-search').value.trim().toLowerCase();
-      const diff = $('#difficulty-filter').value; const type = $('#type-filter').value;
-      const filtered = recipes.filter(r => {
+      const q=$('#recipe-search')?.value.trim().toLowerCase()||'';
+      const diff=$('#difficulty-filter')?.value||'';
+      const type=$('#type-filter')?.value||'';
+      const filtered = recipes.filter(r=>{
         const qmatch = !q || [r.name,r.description,...r.ingredients].join(' ').toLowerCase().includes(q);
         const dmatch = !diff || r.difficulty===diff;
         const tmatch = !type || r.type===type;
         return qmatch && dmatch && tmatch;
       });
       for(const r of filtered){
-        const card = document.createElement('article');
+        const card=document.createElement('article');
         card.className='bg-white rounded-xl shadow p-4 hover-lift';
-        card.draggable = true; card.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', String(r.id)));
+        card.draggable=true;
+        card.addEventListener('dragstart', e=> e.dataTransfer.setData('text/plain', String(r.id)));
         card.innerHTML = `
           <div class="flex items-start justify-between">
             <h3 class="font-semibold text-gray-900 pr-6">${r.name}</h3>
-            <span class="text-xs px-2 py-1 rounded-full ${r.type==='lunch'?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'}">${r.type==='lunch'?'Comida':'Cena'}</span>
+            <span class="text-xs px-2 py-1 rounded-full ${r.type==='lunch'?'bg-amber-100 text-amber-700':'bg-sky-100 text-sky-700'}">${r.type==='lunch'?'Comida':'Cena'}</span>
           </div>
           <p class="text-sm text-gray-600 mt-1">${r.description}</p>
           <div class="mt-3 flex items-center gap-3 text-xs text-gray-500">
-            <span><i class="fa-regular fa-clock mr-1"></i>${r.time} min</span>
-            <span class="capitalize"><i class="fa-solid fa-signal mr-1"></i>${r.difficulty}</span>
+            <span><i class="fa-regular fa-clock mr-1"></i>${r.time||'-'} min</span>
+            <span class="capitalize"><i class="fa-solid fa-signal mr-1"></i>${r.difficulty||'-'}</span>
           </div>
           <div class="mt-3">
             <div class="text-xs text-gray-400">Ingredientes:</div>
@@ -513,7 +497,7 @@
           </div>
           <div class="mt-4 flex gap-2">
             <button class="px-3 py-2 rounded-lg border hover:bg-gray-50 add-to-slot">Añadir a…</button>
-            <button class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 quick-to-selected">Rápido</button>
+            <button class="px-3 py-2 rounded-lg text-white quick-to-selected" style="background:var(--brand)">Rápido</button>
             <button class="ml-auto px-3 py-2 rounded-lg border text-red-600 hover:bg-red-50 delete-recipe" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
           </div>
         `;
@@ -527,15 +511,15 @@
 
     function deleteRecipe(id){
       if(!confirm('¿Eliminar esta receta?')) return;
-      recipes = recipes.filter(r=> r.id!==id);
+      recipes = recipes.filter(r=>r.id!==id);
       storage.saveRecipes(recipes);
       renderRecipesGrid(); renderQuickAdd(); updateStats();
     }
 
-    // ---------- Recipe picker modal ----------
-    let modalTarget = { day:null, meal:null };
-    function openRecipePicker(day, meal, preselectId){
-      modalTarget = { day, meal };
+    // ===== Picker Modal =====
+    let modalTarget={day:null,meal:null};
+    function openRecipePicker(day,meal,preselectId){
+      modalTarget={day,meal};
       $('#recipe-modal').classList.remove('hidden');
       renderModalList(preselectId||null);
     }
@@ -543,144 +527,153 @@
     $('#close-modal').addEventListener('click', closeRecipePicker);
     $('#recipe-modal').addEventListener('click', e=>{ if(e.target.id==='recipe-modal') closeRecipePicker(); });
 
-    function renderModalList(preselectId){
-      const list = $('#modal-list'); list.innerHTML='';
-      const q = $('#modal-search').value.trim().toLowerCase();
-      const filtered = recipes.filter(r => !q || [r.name,r.description,...r.ingredients].join(' ').toLowerCase().includes(q));
+    function renderModalList(pre){
+      const list=$('#modal-list'); list.innerHTML='';
+      const q = ($('#modal-search').value||'').trim().toLowerCase();
+      const filtered = recipes.filter(r=> !q || [r.name,r.description,...r.ingredients].join(' ').toLowerCase().includes(q));
       for(const r of filtered){
-        const row = document.createElement('div'); row.className='flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50';
+        const row=document.createElement('div'); row.className='flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50';
         row.innerHTML = `
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <span class="text-sm font-medium truncate">${r.name}</span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full ${r.type==='lunch'?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'}">${r.type==='lunch'?'Comida':'Cena'}</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full ${r.type==='lunch'?'bg-amber-100 text-amber-700':'bg-sky-100 text-sky-700'}">${r.type==='lunch'?'Comida':'Cena'}</span>
               <span class="text-[10px] text-gray-500">· ${r.time} min · ${r.difficulty}</span>
             </div>
             <div class="text-xs text-gray-500 truncate">${r.ingredients.join(', ')}</div>
           </div>
-          <button class="px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700">Seleccionar</button>
+          <button class="px-3 py-1.5 rounded-lg text-white" style="background:var(--brand)">Seleccionar</button>
         `;
-        row.querySelector('button').addEventListener('click',()=>{
-          const id = r.id;
-          if(modalTarget.day && modalTarget.meal){ setSlot(modalTarget.day, modalTarget.meal, id); }
+        row.querySelector('button').addEventListener('click', ()=>{
+          const id=r.id;
+          if(modalTarget.day && modalTarget.meal){ setSlot(modalTarget.day,modalTarget.meal,id); }
           closeRecipePicker();
         });
-        if(preselectId && preselectId===r.id){ row.classList.add('ring','ring-green-200'); }
+        if(pre && pre===r.id){ row.classList.add('ring','ring-emerald-200'); }
         list.appendChild(row);
       }
-      $('#modal-search').oninput = ()=> renderModalList(preselectId||null);
+      $('#modal-search').oninput=()=>renderModalList(pre||null);
     }
 
-    // ---------- Add recipe modal ----------
-    $('#add-recipe-btn').addEventListener('click', ()=> $('#add-recipe-modal').classList.remove('hidden'));
-    $('#close-add-modal').addEventListener('click', ()=> $('#add-recipe-modal').classList.add('hidden'));
-    $('#cancel-add').addEventListener('click', ()=> $('#add-recipe-modal').classList.add('hidden'));
+    // ===== Add Recipe Modal =====
+    $('#add-recipe-btn').addEventListener('click',()=> $('#add-recipe-modal').classList.remove('hidden'));
+    $('#close-add-modal').addEventListener('click',()=> $('#add-recipe-modal').classList.add('hidden'));
+    $('#cancel-add').addEventListener('click',()=> $('#add-recipe-modal').classList.add('hidden'));
 
     $('#add-recipe-form').addEventListener('submit', e=>{
       e.preventDefault();
-      const name = $('#recipe-name').value.trim();
-      const description = $('#recipe-description').value.trim();
-      const type = $('#recipe-type').value; const difficulty = $('#recipe-difficulty').value;
-      const time = Number($('#recipe-time').value);
-      const ingredients = $('#recipe-ingredients').value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-      const id = (recipes.reduce((m,r)=>Math.max(m,r.id),0) || 0) + 1;
+      const name=$('#recipe-name').value.trim();
+      const description=$('#recipe-description').value.trim();
+      const type=$('#recipe-type').value;
+      const difficulty=$('#recipe-difficulty')?.value||'facil';
+      const time=Number($('#recipe-time')?.value||20);
+      const ingredients=$('#recipe-ingredients')?.value?.split(/\n+/).map(s=>s.trim()).filter(Boolean)||[];
+      const id=(recipes.reduce((m,r)=>Math.max(m,r.id),0)||0)+1;
       recipes.push({id,name,description,type,difficulty,time,ingredients});
       storage.saveRecipes(recipes);
       e.target.reset(); $('#add-recipe-modal').classList.add('hidden');
       renderRecipesGrid(); renderQuickAdd(); updateStats();
     });
 
-    // ---------- Export / Import ----------
-    $('#export-json').addEventListener('click', ()=>{
-      const blob = new Blob([JSON.stringify({recipes}, null, 2)], {type:'application/json'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'meal-planner-recipes.json'; a.click();
+    // ===== Export / Import recetas =====
+    $('#export-json').addEventListener('click',()=>{
+      const blob=new Blob([JSON.stringify({recipes},null,2)],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='recipes.json'; a.click();
     });
-    $('#import-json').addEventListener('change', async (e)=>{
-      const file = e.target.files?.[0]; if(!file) return;
-      const text = await file.text();
+    $('#import-json').addEventListener('change', async e=>{
+      const file=e.target.files?.[0]; if(!file) return;
       try{
-        const data = JSON.parse(text);
-        if(Array.isArray(data)) recipes = data; else if(Array.isArray(data.recipes)) recipes = data.recipes; else throw new Error('Formato no válido');
-        storage.saveRecipes(recipes); renderRecipesGrid(); renderQuickAdd(); updateStats();
-        alert('Importado correctamente');
+        const text=await file.text();
+        const data=JSON.parse(text);
+        recipes = Array.isArray(data)?data:(Array.isArray(data.recipes)?data.recipes:recipes);
+        storage.saveRecipes(recipes);
+        renderRecipesGrid(); renderQuickAdd(); updateStats();
+        alert('Recetas importadas');
       }catch(err){ alert('Error al importar: '+err.message); }
       e.target.value='';
     });
 
-    // ---------- Tabs ----------
-    const tabs = {
+    // ===== Tabs =====
+    const tabs={
       show(name){
-        const id = name+'-view';
-        $$('.tab-content').forEach(s=> s.classList.add('hidden'));
+        const id=name+'-view';
+        $$('.tab-content').forEach(s=>s.classList.add('hidden'));
         $('#'+id).classList.remove('hidden');
         $$('.tab-button').forEach(b=>{ b.classList.remove('tab-active'); b.classList.add('tab-inactive'); });
         $('#tab-'+name).classList.add('tab-active'); $('#tab-'+name).classList.remove('tab-inactive');
         if(name==='recipes') renderRecipesGrid();
       }
     };
-    $('#tab-calendar').addEventListener('click', ()=> tabs.show('calendar'));
-    $('#tab-recipes').addEventListener('click', ()=> tabs.show('recipes'));
-    $('#tab-shopping').addEventListener('click', ()=> tabs.show('shopping'));
+    $('#tab-calendar').addEventListener('click',()=>tabs.show('calendar'));
+    $('#tab-recipes').addEventListener('click',()=>tabs.show('recipes'));
+    $('#tab-shopping').addEventListener('click',()=>tabs.show('shopping'));
 
-    // ---------- Week nav ----------
-    $('#prev-week').addEventListener('click',()=>{ currentWeekStart = addDays(currentWeekStart, -7); renderCalendarHead(); renderSlots(); });
-    $('#next-week').addEventListener('click',()=>{ currentWeekStart = addDays(currentWeekStart, 7); renderCalendarHead(); renderSlots(); });
+    // ===== Week nav =====
+    $('#prev-week').addEventListener('click',()=>{ currentWeekStart=addDays(currentWeekStart,-7); renderCalendarHead(); renderSlots(); });
+    $('#next-week').addEventListener('click',()=>{ currentWeekStart=addDays(currentWeekStart, 7); renderCalendarHead(); renderSlots(); });
     $('#clear-plan').addEventListener('click',()=>{ if(confirm('¿Vaciar planificación de esta semana?')){ storage.clearPlan(toISO(currentWeekStart)); renderSlots(); }});
 
-    // ---------- Shopping list ----------
+    // ===== Shopping =====
     $('#generate-list-btn').addEventListener('click', generateShoppingList);
-    $('#clear-list-btn').addEventListener('click', ()=>{ $('#shopping-list').innerHTML = '<div id="shopping-empty" class="text-center py-8 text-gray-500"><i class="fas fa-list-ul text-4xl mb-2"></i><p>No hay ingredientes en la lista</p></div>'; $('#top-ingredients').innerHTML=''; });
+    $('#clear-list-btn').addEventListener('click', ()=>{
+      $('#shopping-list').innerHTML = '<div id="shopping-empty" class="text-center py-8 text-gray-500"><i class="fas fa-list-ul text-4xl mb-2"></i><p>No hay ingredientes en la lista</p></div>';
+      $('#top-ingredients').innerHTML='';
+    });
 
     function generateShoppingList(){
-      const plan = getActivePlan();
-      const counts = new Map();
-      for(const key of Object.keys(plan.slots)){
-        const id = plan.slots[key]; if(!id) continue;
-        const r = recipes.find(x=>x.id===id); if(!r) continue;
-        for(const ing of r.ingredients){ counts.set(ing, (counts.get(ing)||0)+1); }
+      const plan=getActivePlan();
+      const counts=new Map();
+      for(const k of Object.keys(plan.slots)){
+        const id=plan.slots[k]; if(!id) continue;
+        const r=recipes.find(x=>x.id===id); if(!r) continue;
+        for(const ing of r.ingredients){ counts.set(ing,(counts.get(ing)||0)+1); }
       }
-      const list = $('#shopping-list'); list.innerHTML='';
+      const list=$('#shopping-list'); list.innerHTML='';
       if(counts.size===0){ list.appendChild($('#shopping-empty').cloneNode(true)); return; }
-      const items = Array.from(counts.entries()).sort((a,b)=> a[0].localeCompare(b[0],'es'));
-      for(const [name, qty] of items){
-        const row = document.createElement('div');
+      const items=Array.from(counts.entries()).sort((a,b)=>a[0].localeCompare(b[0],'es'));
+      for(const [name,qty] of items){
+        const row=document.createElement('div');
         row.className='flex items-center justify-between p-2 border rounded-lg';
-        row.innerHTML = `<span class="text-sm">${name}</span><span class="text-xs text-gray-500">${qty}</span>`;
+        row.innerHTML=`<span class="text-sm">${name}</span><span class="text-xs text-gray-500">${qty}</span>`;
         list.appendChild(row);
       }
-      // Top ingredients
-      const top = Array.from(counts.entries()).sort((a,b)=> b[1]-a[1]).slice(0,8);
-      const topBox = $('#top-ingredients'); topBox.innerHTML='';
-      for(const [name, qty] of top){
-        const chip = document.createElement('div'); chip.className='inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 mr-2 mb-2';
-        chip.innerHTML = `<i class="fa-solid fa-hashtag text-xs"></i><span class="text-sm">${name}</span><span class="text-xs text-gray-500">×${qty}</span>`;
+      const top=Array.from(counts.entries()).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      const topBox=$('#top-ingredients'); topBox.innerHTML='';
+      for(const [name,qty] of top){
+        const chip=document.createElement('div');
+        chip.className='inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 mr-2 mb-2';
+        chip.innerHTML=`<i class="fa-solid fa-hashtag text-xs"></i><span class="text-sm">${name}</span><span class="text-xs text-gray-500">×${qty}</span>`;
         topBox.appendChild(chip);
       }
       tabs.show('shopping');
     }
 
-    // ---------- KPIs ----------
+    // ===== KPIs =====
     function updateStats(){
-      const lunchCount = recipes.filter(r=>r.type==='lunch').length;
-      const dinnerCount = recipes.filter(r=>r.type==='dinner').length;
-      $('#kpi-total-recipes').textContent = String(recipes.length);
-      $('#kpi-lunch-recipes').textContent = String(lunchCount);
-      $('#kpi-dinner-recipes').textContent = String(dinnerCount);
-      $('#recipes-count').textContent = String(lunchCount);
-      $('#dinners-count').textContent = String(dinnerCount);
-      const ingSet = new Set(); recipes.forEach(r=> r.ingredients.forEach(i=> ingSet.add(i)));
-      $('#total-ingredients').textContent = String(ingSet.size);
+      const lunch=recipes.filter(r=>r.type==='lunch').length;
+      const dinner=recipes.filter(r=>r.type==='dinner').length;
+      $('#kpi-total-recipes').textContent=String(recipes.length);
+      $('#kpi-lunch-recipes').textContent=String(lunch);
+      $('#kpi-dinner-recipes').textContent=String(dinner);
+      $('#recipes-count').textContent=String(lunch);
+      $('#dinners-count').textContent=String(dinner);
+      const ingSet=new Set(); recipes.forEach(r=>r.ingredients.forEach(i=>ingSet.add(i)));
+      $('#total-ingredients').textContent=String(ingSet.size);
     }
 
-    // ---------- Init ----------
+    // ===== Init =====
     function init(){
-      renderCalendarHead(); renderSlots(); renderQuickAdd(); updateStats();
-      // live filters
+      renderCalendarHead();
+      renderSlots();
+      renderQuickAdd();
+      renderRecipesGrid();
+      updateStats();
+
+      // Filtros en vivo
       $('#recipe-search').addEventListener('input', renderRecipesGrid);
       $('#difficulty-filter').addEventListener('change', renderRecipesGrid);
       $('#type-filter').addEventListener('change', renderRecipesGrid);
     }
-
     init();
   </script>
 </body>
