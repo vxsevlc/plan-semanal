@@ -13,7 +13,6 @@
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
     :root{
-      /* Colores corporativos */
       --brand:#009688;        /* principal */
       --brand-dark:#00796b;   /* hover */
       --brand-100:#e0f2f1;    /* fondo chip */
@@ -36,21 +35,17 @@
       grid-auto-rows:auto;
       min-width:max-content;
     }
-    @media (min-width:1024px){
-      .calendar-grid{ grid-template-columns:140px repeat(7, 1fr); }
-    }
+    @media (min-width:1024px){ .calendar-grid{ grid-template-columns:140px repeat(7, 1fr); } }
     .slot{min-height:5.25rem}
     @media (min-width:768px){ .slot{min-height:6.25rem} }
-
     .cell{border-right:1px solid #e5e7eb}
     .row-divider{border-top:1px solid #e5e7eb}
 
-    /* Cabeceras día */
     .day-head{padding:.75rem;text-align:center;background:#f9fafb}
     .day-head .name{font-weight:600;color:#374151}
     .day-head .date{font-size:.75rem;color:#6b7280}
 
-    /* Pastilla legible y centrada (nombre en varias líneas y tamaño adaptativo) */
+    /* Pastilla */
     .meal-chip{
       display:flex;align-items:center;gap:.5rem;
       padding:.45rem .6rem;border-radius:.8rem;
@@ -58,11 +53,27 @@
       max-width:100%; text-align:center;
     }
     .meal-name{
-      white-space:normal;        /* permite saltos de línea */
-      word-break:break-word;     /* evita “columna de letras” */
+      white-space:normal;
+      word-break:break-word;
       overflow-wrap:anywhere;
       line-height:1.15;
-      font-size:clamp(.78rem, 2.6vw, .95rem); /* se adapta en móvil */
+      font-size:clamp(.78rem, 2.6vw, .95rem);
+    }
+
+    /* -------- Selector de recetas (móvil) -------- */
+    .modal-title{
+      font-weight:600;
+      line-height:1.2;
+      white-space:normal;
+      word-break:break-word;
+      overflow-wrap:anywhere;
+      font-size:clamp(.95rem, 3.6vw, 1rem);
+    }
+    .clamp-2{                  /* 2 líneas de ingredientes */
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
   </style>
 </head>
@@ -118,7 +129,7 @@
       <div class="bg-white rounded-xl shadow-lg">
         <div class="calendar-wrap">
           <div id="calendar-grid" class="calendar-grid">
-            <!-- Se rellena por JS: 1ª fila = cabecera; 2ª = comida; 3ª = cena -->
+            <!-- 1ª fila = cabecera; 2ª = comida; 3ª = cena (rellena JS) -->
           </div>
         </div>
       </div>
@@ -242,17 +253,14 @@
     </div>
   </div>
 
-  <!-- (Opcional) Firebase para sincronizar en tiempo real (desactivado) -->
+  <!-- Firebase (opcional, desactivado) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <script>
-    /* =========================
-       Utilidades + Datos base
-       ========================= */
+    /* ========== Utils & storage ========== */
     const $  = (s,r=document)=>r.querySelector(s);
     const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
-
     const toISO = d => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())).toISOString().slice(0,10);
     const fromISO = iso => { const [y,m,dd] = iso.split('-').map(Number); return new Date(Date.UTC(y,m-1,dd)); };
     const startOfWeekMonday=(date=new Date())=>{
@@ -263,7 +271,6 @@
     const dayKeys=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
     const dayNames=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 
-    /* LocalStorage */
     const LS_RECIPES='mp_recipes_v1';
     const planKey=weekISO=>`mp_plan_${weekISO}`;
     const storage={
@@ -274,7 +281,7 @@
       clearPlan(weekISO){ localStorage.removeItem(planKey(weekISO)); }
     };
 
-    /* Semilla recetas */
+    /* Semilla básica */
     const seedRecipes=[
       {id:1,name:'Ensalada César con Pollo',description:'Ensalada fresca',difficulty:'facil',time:20,type:'lunch',ingredients:['lechuga romana','pollo','parmesano','pan tostado','ajo','limón','aceite de oliva']},
       {id:2,name:'Bowl de Quinoa y Verduras',description:'Bowl saludable',difficulty:'facil',time:25,type:'lunch',ingredients:['quinoa','brócoli','zanahoria','garbanzos','aguacate','limón']},
@@ -287,20 +294,14 @@
     let currentWeekStart = startOfWeekMonday(new Date());
     let selectedQuickRecipeId = null;
 
-    function emptyPlan(){
-      const slots={}; for(const d of dayKeys){ slots[`${d}-lunch`]=null; slots[`${d}-dinner`]=null; }
-      return {weekStartISO:toISO(currentWeekStart), slots};
-    }
+    function emptyPlan(){ const slots={}; for(const d of dayKeys){ slots[`${d}-lunch`]=null; slots[`${d}-dinner`]=null; } return {weekStartISO:toISO(currentWeekStart), slots}; }
     const getActivePlan=()=> storage.getPlan(toISO(currentWeekStart)) || emptyPlan();
 
-    /* =========================
-       Calendario (una sola grid)
-       ========================= */
+    /* ========== Calendario (una grid) ========== */
     function buildCalendarGrid(){
-      const grid = $('#calendar-grid');
-      grid.innerHTML = '';
+      const grid = $('#calendar-grid'); grid.innerHTML = '';
 
-      // 1) Fila cabecera
+      // Cabecera
       const headFirst = document.createElement('div');
       headFirst.className = 'day-head cell';
       headFirst.innerHTML = '<div class="name">Tipo</div>';
@@ -314,7 +315,7 @@
         grid.appendChild(cell);
       }
 
-      // 2) Fila comida
+      // Fila comida
       const tipoComida = document.createElement('div');
       tipoComida.className = 'cell p-3 md:p-4 bg-emerald-50 flex items-center justify-center row-divider';
       tipoComida.innerHTML = `<div class="flex items-center gap-2 text-emerald-700"><i class="fa-solid fa-utensils"></i><span class="font-medium">Comida</span></div>`;
@@ -328,7 +329,7 @@
         grid.appendChild(slot);
       }
 
-      // 3) Fila cena
+      // Fila cena
       const tipoCena = document.createElement('div');
       tipoCena.className = 'cell p-3 md:p-4 bg-blue-50 flex items-center justify-center row-divider';
       tipoCena.innerHTML = `<div class="flex items-center gap-2 text-blue-700"><i class="fa-regular fa-moon"></i><span class="font-medium">Cena</span></div>`;
@@ -341,12 +342,10 @@
         grid.appendChild(slot);
       }
 
-      // texto cabecera semana
       const end=addDays(currentWeekStart,6);
       $('#week-range').textContent=`Semana del ${currentWeekStart.getUTCDate()} de ${currentWeekStart.toLocaleString('es-ES',{month:'long',timeZone:'UTC'})} al ${end.getUTCDate()} de ${end.toLocaleString('es-ES',{month:'long',timeZone:'UTC'})} ${end.getUTCFullYear()}`;
       $('#week-chip').textContent=`Semana ${getISOWeekNumber(fromISO(toISO(currentWeekStart)))}`;
     }
-
     function getISOWeekNumber(d){ const x=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())); x.setUTCDate(x.getUTCDate()+4-(x.getUTCDay()||7)); const y=new Date(Date.UTC(x.getUTCFullYear(),0,1)); return Math.ceil(((x-y)/86400000+1)/7); }
 
     function createSlot(dayKey,meal,recipeId){
@@ -380,7 +379,7 @@
       plan.slots[`${dayKey}-${meal}`]=recipeId;
       storage.savePlan(plan.weekStartISO, plan);
       renderSlotContent(document.querySelector(`.meal-slot[data-day="${dayKey}"][data-meal="${meal}"]`), recipeId);
-      sync.save(plan.weekStartISO, plan); // si algún día activas Firebase
+      sync.save(plan.weekStartISO, plan);
     }
     function onSlotClick(e){
       const slot=e.currentTarget;
@@ -450,7 +449,7 @@
     }
     function deleteRecipe(id){ if(!confirm('¿Eliminar esta receta?')) return; recipes = recipes.filter(r=>r.id!==id); storage.saveRecipes(recipes); renderRecipesGrid(); renderQuickAdd(); updateStats(); }
 
-    /* Modal picker */
+    /* ===== Modal picker (ARREGLADO MÓVIL) ===== */
     let modalTarget={day:null,meal:null};
     function openRecipePicker(day,meal,preselectId){ modalTarget={day,meal}; $('#recipe-modal').classList.remove('hidden'); renderModalList(preselectId||null); }
     function closeRecipePicker(){ $('#recipe-modal').classList.add('hidden'); $('#modal-search').value=''; }
@@ -462,37 +461,26 @@
       const q=($('#modal-search').value||'').trim().toLowerCase();
       const filtered=recipes.filter(r=> !q || [r.name,r.description,...r.ingredients].join(' ').toLowerCase().includes(q));
       for(const r of filtered){
-        const row=document.createElement('div'); row.className='flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50';
-        row.innerHTML=`<div class="flex-1 min-w-0"><div class="flex items-center gap-2"><span class="text-sm font-medium truncate">${r.name}</span>
-          <span class="text-[10px] px-2 py-0.5 rounded-full ${r.type==='lunch'?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'}">${r.type==='lunch'?'Comida':'Cena'}</span>
-          <span class="text-[10px] text-gray-500">· ${r.time} min · ${r.difficulty}</span></div>
-          <div class="text-xs text-gray-500 truncate">${r.ingredients.join(', ')}</div></div>
-          <button class="px-3 py-1.5 rounded-lg text-white" style="background:var(--brand)">Seleccionar</button>`;
+        const row=document.createElement('div');
+        row.className='flex items-stretch gap-3 p-3 rounded-lg border hover:bg-gray-50';
+        row.innerHTML=`
+          <div class="flex-1 min-w-0">
+            <div class="modal-title">${r.name}</div>
+            <div class="mt-1 flex items-center flex-wrap gap-x-2 gap-y-1 text-[11px] text-gray-500">
+              <span class="px-2 py-0.5 rounded-full ${r.type==='lunch'?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'}">${r.type==='lunch'?'Comida':'Cena'}</span>
+              <span>• ${r.time} min</span>
+              <span>• ${r.difficulty}</span>
+            </div>
+            <div class="mt-1 text-xs text-gray-500 clamp-2">${r.ingredients.join(', ')}</div>
+          </div>
+          <button class="shrink-0 px-3 py-2 rounded-lg text-white" style="background:var(--brand)">Seleccionar</button>
+        `;
         row.querySelector('button').addEventListener('click',()=>{ const id=r.id; if(modalTarget.day&&modalTarget.meal){ setSlot(modalTarget.day, modalTarget.meal, id); } closeRecipePicker(); });
         if(pre && pre===r.id){ row.classList.add('ring','ring-emerald-200'); }
         list.appendChild(row);
       }
       $('#modal-search').oninput=()=> renderModalList(pre||null);
     }
-
-    /* Modal añadir receta */
-    $('#add-recipe-btn').addEventListener('click',()=> $('#add-recipe-modal').classList.remove('hidden'));
-    $('#close-add-modal').addEventListener('click',()=> $('#add-recipe-modal').classList.add('hidden'));
-    $('#cancel-add').addEventListener('click',()=> $('#add-recipe-modal').classList.add('hidden'));
-
-    $('#add-recipe-form').addEventListener('submit', e=>{
-      e.preventDefault();
-      const name=$('#recipe-name').value.trim();
-      const description=$('#recipe-description').value.trim();
-      const type=$('#recipe-type').value; const difficulty=$('#recipe-difficulty').value;
-      const time=Number($('#recipe-time').value);
-      const ingredients=$('#recipe-ingredients').value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
-      const id=(recipes.reduce((m,r)=>Math.max(m,r.id),0)||0)+1;
-      recipes.push({id,name,description,type,difficulty,time,ingredients});
-      storage.saveRecipes(recipes);
-      e.target.reset(); $('#add-recipe-modal').classList.add('hidden');
-      renderRecipesGrid(); renderQuickAdd(); updateStats();
-    });
 
     /* Export / Import */
     $('#export-json').addEventListener('click', ()=>{
@@ -526,7 +514,7 @@
     $('#tab-recipes').addEventListener('click',  ()=>tabs.show('recipes'));
     $('#tab-shopping').addEventListener('click', ()=>tabs.show('shopping'));
 
-    /* Lista de la compra */
+    /* Lista de la compra + KPIs */
     $('#generate-list-btn').addEventListener('click', generateShoppingList);
     $('#clear-list-btn').addEventListener('click',()=>{ $('#shopping-list').innerHTML=$('#shopping-empty').outerHTML; $('#top-ingredients').innerHTML=''; });
     function generateShoppingList(){
@@ -550,8 +538,6 @@
       });
       tabs.show('shopping');
     }
-
-    /* KPIs */
     function updateStats(){
       const lc=recipes.filter(r=>r.type==='lunch').length;
       const dc=recipes.filter(r=>r.type==='dinner').length;
@@ -563,11 +549,8 @@
       const set=new Set(); recipes.forEach(r=>r.ingredients.forEach(i=>set.add(i))); $('#total-ingredients').textContent=String(set.size);
     }
 
-    /* =========================
-       Firebase Sync (opcional)
-       ========================= */
-    const ENABLE_SYNC=false; // lo dejamos desactivado de momento
-    const GROUP_ID='familia-juan-marian';
+    /* Firebase Sync (opcional, desactivado) */
+    const ENABLE_SYNC=false, GROUP_ID='familia-juan-marian';
     const firebaseConfig={apiKey:"PON_AQUI",authDomain:"PON_AQUI.firebaseapp.com",databaseURL:"https://PON_AQUI-default-rtdb.europe-west1.firebasedatabase.app",projectId:"PON_AQUI",storageBucket:"PON_AQUI.appspot.com",messagingSenderId:"PON_AQUI",appId:"PON_AQUI"};
     const sync=(function(){
       let app=null, db=null, ref=null;
@@ -590,16 +573,13 @@
       return {init,save,listen};
     })();
 
-    /* Init */
     function init(){
       buildCalendarGrid();
       renderQuickAdd();
       updateStats();
-      // filtros
       $('#recipe-search').addEventListener('input', renderRecipesGrid);
       $('#difficulty-filter').addEventListener('change', renderRecipesGrid);
       $('#type-filter').addEventListener('change', renderRecipesGrid);
-      // sync
       sync.init(); sync.listen(toISO(currentWeekStart));
     }
     init();
